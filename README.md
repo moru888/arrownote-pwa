@@ -6,6 +6,8 @@ ArrowNoteは、アーチェリーの練習、試合、着弾位置、振り返�
 
 - `index.html`: 画面、スタイル、主要ロジック
 - `quote-catalog.js`: 公開用名言カタログの生成物
+- `firebase-sync.js`: GoogleログインとFirestore同期
+- `firestore.rules`: Firestoreのアクセス制御ルール
 - `manifest.webmanifest`: PWA設定
 - `sw.js`: オフラインキャッシュ
 - `icons/`: ロゴとPWAアイコン
@@ -18,7 +20,7 @@ ArrowNoteは、アーチェリーの練習、試合、着弾位置、振り返�
 
 PWAとしての動作確認には、`file://` ではなくローカルHTTPサーバーまたはHTTPS環境を使用します。公開版はGitHub Pagesを想定しています。
 
-このアプリの記録は現在、ブラウザの `localStorage` に保存されます。ソースコードはGitHubで同期できますが、端末内の練習履歴や下書きはPC間で自動同期されません。
+このアプリの記録はまずブラウザの `localStorage` に保存されます。Googleログイン後は、本保存した履歴、日誌、じっくり記録、設定、削除情報をFirestoreで端末間同期します。入力途中の下書きは端末間同期しません。
 
 ## 2台のPCで作業する場合
 
@@ -38,5 +40,4 @@ PWAとしての動作確認には、`file://` ではなくローカルHTTPサー
 
 ## セキュリティ
 
-このリポジトリとGitHub Pagesは公開情報として扱います。将来OpenAI APIを連携する場合も、APIキーをフロントエンドへ埋め込まず、Cloudflare Workersなどのサーバー側で秘密情報として保持します。
-
+このリポジトリとGitHub Pagesは公開情報として扱います。FirebaseのWeb設定値は公開クライアント識別情報として `firebase-sync.js` に置き、データ保護はAuthenticationと `firestore.rules` で行います。サービスアカウント秘密鍵、Admin SDK秘密鍵、OpenAI APIキーはフロントエンドへ埋め込まず、秘密情報としてサーバー側で保持します。

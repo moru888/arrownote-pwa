@@ -8,7 +8,7 @@
 - 個人向けArrowNote PWAの主要画面は `index.html` に実装済み。
 - 記録、日誌、グラフ、履歴、設定のタブがある。
 - AI個別アドバイスは保留。日誌では生成AIや外部APIを使わない固定ルールコメントを実装済み。
-- データはブラウザの `localStorage` に保存され、端末間では同期されない。
+- データはブラウザの `localStorage` へ先に保存する。JSONバックアップに加え、Firebase AuthenticationとCloud Firestoreによる自動同期コードを実装済み。Firebase側のルール公開と実機試験は未完了。
 - GitHubリポジトリをメインPCと別ノートPCへクローンし、交互に開発する運用へ移行中。
 
 ## 今回完了したこと
@@ -18,10 +18,18 @@
 - 週間目標の25%、50%、75%、100%マイルストーン表示を追加した。
 - 安全、負荷、出来事、スコア傾向などを優先順に判定する固定ルールコメントとルールIDを追加した。
 - テスト用 `archery-log.html` とPWA版 `index.html` の両方へ同じ機能を反映した。
-- Service Workerのキャッシュ名を `arrownote-pwa-v36` へ更新した。
+- Service Workerのキャッシュ名を `arrownote-pwa-v38` へ更新した。
 - 振り返り8か所へ音声入力ボタンを追加した。Web Speech API未対応時はOSキーボードのマイク利用を案内する。
 - 日誌へ「じっくり記録」を追加し、4種類の書き出しガイド、最大10,000文字の本文、専用下書き、本保存、再編集、削除に対応した。
 - じっくり記録は `arrowNoteDeepJournalV1`、下書きは `arrowNoteDeepJournalDraftV1` に保存する。
+- 設定画面へJSONバックアップの書き出し・読み込みを追加した。セッション、日誌、じっくり記録、設定を対象とし、下書きは除外する。
+- 既存記録を含む保存対象へ `syncId`、`createdAt`、`updatedAt` を補完した。
+- バックアップの読み込みは非破壊統合とし、同じ同期用IDでは更新日時が新しい方を採用する。
+- Firebase同期の導入案を `docs/FIREBASE_SYNC_PLAN.md` に記録した。
+- `firebase-sync.js` を追加し、Googleログイン、手動同期、自動同期、オフライン待機、更新日時優先、削除情報の同期を実装した。
+- 設定画面へ同期状態、ログイン中アカウント、個人固定用UID、ログイン・同期・ログアウト操作を追加した。
+- `firestore.rules` を追加した。初期ルールは認証ユーザー本人のUID配下だけを許可し、初回ログイン後は所有者UIDだけに固定する。
+- Service WorkerがGoogle認証などの外部通信をキャッシュしないよう、同一オリジンのGETだけを処理するようにした。
 
 ## カメラ撮影による着弾・スコア記録機能
 
@@ -38,18 +46,24 @@
 1. テストページを手動再読込し、音声入力ボタンとじっくり記録の画面配置を確認する。
 2. GitHub Pages版を実機iPhoneで開き、マイク許可、認識結果の追記、停止操作を確認する。
 3. PWA再起動後にじっくり記録の下書きが復元されることを確認する。
-4. じっくり記録をCSVバックアップへ含める形式を検討する。
+4. FirebaseコンソールのFirestore「ルール」へ `firestore.rules` を貼り付けて公開する。
+5. Authenticationの承認済みドメインへ `moru888.github.io` を追加する。
+6. GitHub Pages版で最初のGoogleログインを行い、設定画面に表示されたUIDを控える。
+7. Firestoreルールを所有者UID固定版へ変更してから、iPhoneとPCの双方向同期を試験する。
 
 ## 既知の注意点
 
 - `quote-catalog.js` のメタ情報は現在 `mode: "preview"`。
-- `sw.js` のキャッシュ名は `arrownote-pwa-v36`。配信更新後に古いPWAが残る場合はSafariを再起動する。
+- `sw.js` のキャッシュ名は `arrownote-pwa-v38`。配信更新後に古いPWAが残る場合はSafariを再起動する。
 - GitHub Pagesへ反映しても、Service WorkerやSafariのキャッシュで旧画面が残る場合がある。
-- APIキーを `index.html` やGitHubへ追加してはいけない。
+- サービスアカウント秘密鍵、Admin SDK秘密鍵、OpenAI APIキーを `index.html` やGitHubへ追加してはいけない。Firebase Web設定値は公開クライアント識別情報として例外。
 - `index.html` は単一ファイルとして大きくなっているため、将来の機能拡張前に分割を検討する余地がある。
 - アプリ内ブラウザの自動操作は `file://` URLで安全ポリシーにより拒否されたため、今回の画面操作試験は手動確認待ち。HTML要素整合、JavaScript構文、集計ロジックはローカル検証する。
 - 音声認識はブラウザ依存であり、`file://` テストページよりGitHub PagesのHTTPS版での実機確認を優先する。
 - 現在のNotion用CSVにはじっくり記録を含めていない。
+- JSONバックアップは、Firebase自動同期とは独立した手動退避・復元手段として残す。
+- Firebase JS SDKは公式CDNのバージョン `12.16.0` を使用する。初回のクラウド機能読込にはオンライン接続が必要だが、記録画面と端末内保存は独立して動作する。
+- Firebase Web設定値は公開クライアント識別情報。サービスアカウント秘密鍵、Admin SDK秘密鍵、OpenAI APIキーはGitHubへ置かない。
 
 ## 次の端末で最初に送る依頼文
 

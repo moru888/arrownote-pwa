@@ -25,12 +25,13 @@
 - 主画面とロジックは `index.html` にまとまっている。
 - 名言台帳の生成物は `quote-catalog.js`。
 - PWA設定は `manifest.webmanifest`、オフラインキャッシュは `sw.js`。
+- Firebase AuthenticationとFirestore同期は `firebase-sync.js`、アクセス制御は `firestore.rules`。
 - アイコンとロゴ素材は `icons/`。
 - セッション、日誌、下書き、設定はブラウザの `localStorage` に保存する。
 
 ## 実装上の禁止事項と注意事項
 
-- APIキー、トークン、パスワードをHTML、JavaScript、GitHubへ保存しない。
+- サービスアカウント秘密鍵、Admin SDK秘密鍵、OpenAI APIキー、トークン、パスワードをHTML、JavaScript、GitHubへ保存しない。FirebaseのWeb用設定値は公開クライアント識別情報として例外だが、Firestoreルールを必須とする。
 - 既存の `localStorage` のキーや記録構造を、移行処理なしに変更しない。
 - ユーザーの履歴を自動削除しない。
 - `quote-catalog.js` は原則として手編集せず、元のスプレッドシートから再生成する。
@@ -52,6 +53,7 @@
 - 日別履歴、着弾図、グラフ、日誌
 - スマートフォン縦向きと横向き精密入力
 - PWA更新後のキャッシュとホーム画面起動
+- Googleログイン、同期状態表示、PC・スマートフォン間の追加・更新・削除同期
 
 ## 作業終了時
 
@@ -60,4 +62,3 @@
 3. 判断理由を残す必要がある場合は `docs/DECISIONS.md` を更新する。
 4. `docs/HANDOFF.md` に完了内容、確認結果、次の作業、既知の問題を書く。
 5. 意味の分かるコミットメッセージでCommitし、GitHubへPushする。
-
