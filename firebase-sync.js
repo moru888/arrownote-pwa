@@ -138,6 +138,37 @@ function collectionRef(uid, type) {
   return collection(db, 'users', uid, type);
 }
 
+function encodeCloudDocument(value) {
+  const payload = JSON.stringify(value);
+  if (!payload) throw new Error('クラウド保存用データを作成できませんでした');
+  const encoded = {
+    syncId: String(value.syncId || 'settings'),
+    schemaVersion: 1,
+    payload,
+    updatedAt: value.updatedAt || value.deletedAt || value.createdAt || new Date().toISOString()
+  };
+  for (const key of ['createdAt', 'deletedAt', 'date', 'type']) {
+    if (typeof value[key] === 'string' && value[key]) encoded[key] = value[key];
+  }
+  return encoded;
+}
+
+function decodeCloudDocument(value) {
+  if (!value || typeof value !== 'object' || typeof value.payload !== 'string') return value;
+  try {
+    const decoded = JSON.parse(value.payload);
+    if (!decoded || typeof decoded !== 'object') return null;
+    return {
+      ...decoded,
+      syncId: decoded.syncId || value.syncId,
+      updatedAt: decoded.updatedAt || value.updatedAt
+    };
+  } catch (error) {
+    console.warn('ArrowNote cloud document could not be decoded', error);
+    return null;
+  }
+}
+
 async function readRemote(uid) {
   const [sessionsSnap, journalsSnap, deepSnap, tombstonesSnap, settingsSnap] = await Promise.all([
     getDocs(collectionRef(uid, 'sessions')),
@@ -147,11 +178,11 @@ async function readRemote(uid) {
     getDoc(doc(db, 'users', uid, 'settings', 'main'))
   ]);
   return {
-    sessions: cleanRecords(sessionsSnap.docs.map(item => item.data())),
-    journals: cleanRecords(journalsSnap.docs.map(item => item.data())),
-    deepJournals: cleanRecords(deepSnap.docs.map(item => item.data())),
-    tombstones: cleanTombstones(tombstonesSnap.docs.map(item => item.data())),
-    settings: settingsSnap.exists() ? settingsSnap.data() : null
+    sessions: cleanRecords(sessionsSnap.docs.map(item => decodeCloudDocument(item.data()))),
+    journals: cleanRecords(journalsSnap.docs.map(item => decodeCloudDocument(item.data()))),
+    deepJournals: cleanRecords(deepSnap.docs.map(item => decodeCloudDocument(item.data()))),
+    tombstones: cleanTombstones(tombstonesSnap.docs.map(item => decodeCloudDocument(item.data()))),
+    settings: settingsSnap.exists() ? decodeCloudDocument(settingsSnap.data()) : null
   };
 }
 
@@ -160,7 +191,7 @@ async function commitOperations(operations) {
     const batch = writeBatch(db);
     for (const operation of operations.slice(start, start + 400)) {
       if (operation.kind === 'delete') batch.delete(operation.ref);
-      else batch.set(operation.ref, operation.value);
+      else batch.set(operation.ref, encodeCloudDocument(operation.value));
     }
     await batch.commit();
   }

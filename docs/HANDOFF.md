@@ -18,7 +18,7 @@
 - 週間目標の25%、50%、75%、100%マイルストーン表示を追加した。
 - 安全、負荷、出来事、スコア傾向などを優先順に判定する固定ルールコメントとルールIDを追加した。
 - テスト用 `archery-log.html` とPWA版 `index.html` の両方へ同じ機能を反映した。
-- Service Workerのキャッシュ名を `arrownote-pwa-v38` へ更新した。
+- Service Workerのキャッシュ名を `arrownote-pwa-v39` へ更新した。
 - 振り返り8か所へ音声入力ボタンを追加した。Web Speech API未対応時はOSキーボードのマイク利用を案内する。
 - 日誌へ「じっくり記録」を追加し、4種類の書き出しガイド、最大10,000文字の本文、専用下書き、本保存、再編集、削除に対応した。
 - じっくり記録は `arrowNoteDeepJournalV1`、下書きは `arrowNoteDeepJournalDraftV1` に保存する。
@@ -28,8 +28,9 @@
 - Firebase同期の導入案を `docs/FIREBASE_SYNC_PLAN.md` に記録した。
 - `firebase-sync.js` を追加し、Googleログイン、手動同期、自動同期、オフライン待機、更新日時優先、削除情報の同期を実装した。
 - 設定画面へ同期状態、ログイン中アカウント、個人固定用UID、ログイン・同期・ログアウト操作を追加した。
-- `firestore.rules` を追加した。初期ルールは認証ユーザー本人のUID配下だけを許可し、初回ログイン後は所有者UIDだけに固定する。
+- `firestore.rules` を追加し、初回ログインで確認した所有者UIDだけが本人のUID配下を読み書きできる最終ルールへ固定した。Firebaseコンソールへの公開確認が残る。
 - Service WorkerがGoogle認証などの外部通信をキャッシュしないよう、同一オリジンのGETだけを処理するようにした。
+- Firestoreがセッション内の配列内配列を拒否したため、クラウド保存時は記録本体をJSON文字列 `payload` へ包み、読込時に復元する方式へ修正した。ネスト配列を含むセッションの往復テストに合格済み。
 
 ## カメラ撮影による着弾・スコア記録機能
 
@@ -48,13 +49,13 @@
 3. PWA再起動後にじっくり記録の下書きが復元されることを確認する。
 4. FirebaseコンソールのFirestore「ルール」へ `firestore.rules` を貼り付けて公開する。
 5. Authenticationの承認済みドメインへ `moru888.github.io` を追加する。
-6. GitHub Pages版で最初のGoogleログインを行い、設定画面に表示されたUIDを控える。
-7. Firestoreルールを所有者UID固定版へ変更してから、iPhoneとPCの双方向同期を試験する。
+6. Firebaseコンソールへ所有者UID固定版の `firestore.rules` を貼り付けて公開する。
+7. iPhoneとPCの双方向同期を試験する。
 
 ## 既知の注意点
 
 - `quote-catalog.js` のメタ情報は現在 `mode: "preview"`。
-- `sw.js` のキャッシュ名は `arrownote-pwa-v38`。配信更新後に古いPWAが残る場合はSafariを再起動する。
+- `sw.js` のキャッシュ名は `arrownote-pwa-v39`。配信更新後に古いPWAが残る場合はSafariを再起動する。
 - GitHub Pagesへ反映しても、Service WorkerやSafariのキャッシュで旧画面が残る場合がある。
 - サービスアカウント秘密鍵、Admin SDK秘密鍵、OpenAI APIキーを `index.html` やGitHubへ追加してはいけない。Firebase Web設定値は公開クライアント識別情報として例外。
 - `index.html` は単一ファイルとして大きくなっているため、将来の機能拡張前に分割を検討する余地がある。

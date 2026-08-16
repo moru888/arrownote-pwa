@@ -4,7 +4,7 @@
 
 ## 1. 現在地
 
-JSONバックアップ、非破壊復元、同期用ID、作成日時、更新日時に加え、GoogleログインとFirestore同期コードまで実装済み。Firebaseコンソールでのルール公開、承認済みドメイン、初回ログイン、所有者UID固定、実機試験が残っている。
+JSONバックアップ、非破壊復元、同期用ID、作成日時、更新日時に加え、GoogleログインとFirestore同期コードまで実装済み。初回ログインと所有者UIDの確認も完了した。Firebaseコンソールでの所有者UID固定ルール公開と、PCとの双方向同期試験が残っている。
 
 この順序により、Firebase設定中に問題が起きても既存の端末内記録をJSONへ退避できる。
 
@@ -55,7 +55,7 @@ service cloud.firestore {
 
 ### 個人利用向けの最終固定
 
-初期ルールを公開してGitHub Pages版で一度Googleログインすると、設定画面に「個人固定用UID」が表示される。そのUIDを控え、次のようにルールを固定する。
+初期ルールを公開してGitHub Pages版で一度Googleログインすると、設定画面に「個人固定用UID」が表示される。そのUIDを控え、次のようにルールを固定する。ArrowNoteでは確認済みUIDをリポジトリ内の `firestore.rules` へ反映済みである。
 
 ```text
 rules_version = '2';
