@@ -451,5 +451,5 @@ function removeLog(id){if(confirm('この記録を削除しますか？')){const
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1700)}
 init();
 </script><script>
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
-</script><script type="module" src="./firebase-sync.js"></script></body></html>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=40',{updateViaCache:'none'}).catch(()=>{}))}
+</script><script type="module" src="./firebase-sync.js?v=40"></script></body></html>
